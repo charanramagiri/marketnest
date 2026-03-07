@@ -9,7 +9,7 @@ function resolveImageUrl(value) {
   return `${BACKEND_ORIGIN}${value.startsWith("/") ? "" : "/"}${value}`;
 }
 
-function ProductCard({ product, to, onClick }) {
+function ProductCard({ product, to, onClick, actions = null, showStatus = true }) {
   const [imageError, setImageError] = useState(false);
 
   const imageUrl = useMemo(() => {
@@ -38,14 +38,18 @@ function ProductCard({ product, to, onClick }) {
         <div className="product-content">
           <h3 className="product-title">{product?.name || "Untitled Product"}</h3>
 
-          <div className="meta-row">
-            {product?.category && <span className="meta-chip">{product.category}</span>}
-            {product?.status && <span className="meta-chip">{product.status}</span>}
-          </div>
+          {showStatus && (
+            <div className="meta-row">
+              {product?.category && <span className="meta-chip">{product.category}</span>}
+              {product?.status && <span className="meta-chip">{product.status}</span>}
+            </div>
+          )}
 
           <span className="price-pill">INR {Number(product?.price || 0).toLocaleString("en-IN")}</span>
         </div>
       </Wrapper>
+
+      {actions && <div className="product-card-actions">{actions}</div>}
     </article>
   );
 }

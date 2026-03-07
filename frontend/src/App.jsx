@@ -8,7 +8,21 @@ import Marketplace from "./pages/Marketplace.jsx";
 import ProductDetails from "./pages/ProductDetails.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import CreateProduct from "./pages/CreateProduct.jsx";
+import EditProduct from "./pages/EditProduct.jsx";
 import { getRole, isAuthenticated } from "./utils/auth";
+
+function RequireCustomer({ children }) {
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const role = getRole();
+  if (role !== "customer") {
+    return <Navigate to="/marketplace" replace />;
+  }
+
+  return children;
+}
 
 function RequireBrand({ children }) {
   if (!isAuthenticated()) {
@@ -34,7 +48,14 @@ function App() {
         <Route path="/signup" element={<Signup />} />
 
         <Route path="/marketplace" element={<Marketplace />} />
-        <Route path="/product/:id" element={<ProductDetails />} />
+        <Route
+          path="/product/:id"
+          element={
+            <RequireCustomer>
+              <ProductDetails />
+            </RequireCustomer>
+          }
+        />
 
         <Route
           path="/dashboard"
@@ -49,6 +70,14 @@ function App() {
           element={
             <RequireBrand>
               <CreateProduct />
+            </RequireBrand>
+          }
+        />
+        <Route
+          path="/edit-product/:id"
+          element={
+            <RequireBrand>
+              <EditProduct />
             </RequireBrand>
           }
         />
