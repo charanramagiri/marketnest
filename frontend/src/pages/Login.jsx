@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import API from "../api/axios";
+import { getRoleFromToken, setAuth } from "../utils/auth";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -16,12 +17,16 @@ export default function Login() {
         password
       });
 
-      // Save token in localStorage
-      localStorage.setItem("token", res.data.accessToken);
+      const token = res.data?.accessToken;
+      const role = getRoleFromToken(token);
 
+      if (!token || !role) {
+        setError("Login failed: invalid authentication response.");
+        return;
+      }
+
+      setAuth({ token, role });
       alert("Login success");
-
-      // Redirect to marketplace after login
       navigate("/marketplace");
     } catch (err) {
       console.error(err);
@@ -30,29 +35,51 @@ export default function Login() {
   };
 
   return (
-    <div style={{ padding: "30px" }}>
-      <h1>Login</h1>
+    <section className="auth-shell">
+      <div className="card auth-card">
+        <aside className="auth-aside">
+          <h1 className="title-xl">Welcome Back</h1>
+          <p>Sign in to manage products, monitor dashboard metrics, and publish updates.</p>
+        </aside>
 
-      <input
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        style={{ display: "block", margin: "10px 0", padding: "8px", width: "250px" }}
-      />
+        <div className="auth-main">
+          <h2>Login</h2>
+          <div className="form-stack">
+            <div>
+              <label className="field-label" htmlFor="email">Email</label>
+              <input
+                id="email"
+                className="input"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
 
-      <input
-        placeholder="Password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        style={{ display: "block", margin: "10px 0", padding: "8px", width: "250px" }}
-      />
+            <div>
+              <label className="field-label" htmlFor="password">Password</label>
+              <input
+                id="password"
+                className="input"
+                placeholder="Enter your password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
 
-      <button onClick={login} style={{ padding: "8px 20px" }}>
-        Login
-      </button>
+            <button type="button" onClick={login} className="btn btn-primary">
+              Login
+            </button>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-    </div>
+            {error && <p className="error-text">{error}</p>}
+
+            <p className="text-muted">
+              New to MarketNest? <Link to="/signup">Create an account</Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }

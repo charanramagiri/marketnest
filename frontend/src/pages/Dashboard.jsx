@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 
 function Dashboard() {
@@ -32,15 +33,35 @@ function Dashboard() {
   }, []);
 
   return (
-    <div style={{ padding: "30px" }}>
-      <h1>Brand Dashboard</h1>
+    <section className="page-shell">
+      <header className="hero">
+        <div>
+          <h1 className="title-xl">Brand Dashboard</h1>
+          <p className="text-muted">Track catalog status and monitor publishing progress.</p>
+        </div>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Link className="btn btn-soft" to="/marketplace">View Marketplace</Link>
+          <Link className="btn btn-primary" to="/create-product">Create Product</Link>
+        </div>
+      </header>
 
-      <div style={{ marginTop: "20px" }}>
-        <h3>Total Products: {data.totalProducts}</h3>
-        <h3>Published Products: {data.published}</h3>
-        <h3>Archived Products: {data.archived}</h3>
+      <div className="dashboard-grid">
+        <article className="card stat-card">
+          <p className="stat-label">Total Products</p>
+          <p className="stat-value">{data.totalProducts}</p>
+        </article>
+
+        <article className="card stat-card">
+          <p className="stat-label">Published Products</p>
+          <p className="stat-value" style={{ color: "#0f766e" }}>{data.published}</p>
+        </article>
+
+        <article className="card stat-card">
+          <p className="stat-label">Archived Products</p>
+          <p className="stat-value" style={{ color: "#b54708" }}>{data.archived}</p>
+        </article>
       </div>
-    </div>
+    </section>
   );
 }
 

@@ -1,54 +1,81 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import ProductCard from "../components/ProductCard";
+import { isAuthenticated } from "../utils/auth";
 
 function Marketplace() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setIsLoading(true);
+        setError("");
         const res = await axios.get("http://localhost:5000/api/marketplace/products");
-        setProducts(res.data.products); // Make sure backend sends { products: [...] }
-      } catch (error) {
-        console.error("Failed to fetch products", error);
+        setProducts(res.data?.products || []);
+      } catch (fetchError) {
+        console.error("Failed to fetch products", fetchError);
+        setError("Unable to load products right now.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchProducts();
   }, []);
 
+  const handleProductClick = (event) => {
+    if (!isAuthenticated()) {
+      event.preventDefault();
+      alert("Please login to view product details.");
+      navigate("/login");
+    }
+  };
+
   return (
-    <div style={{ padding: "30px" }}>
-      <h1>Marketplace</h1>
+    <section className="page-shell">
+      <header className="hero">
+        <div>
+          <h1 className="title-xl">Marketplace</h1>
+          <p className="text-muted">Explore products from verified creators and brands.</p>
+        </div>
+      </header>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", marginTop: "20px" }}>
-        {products.length === 0 && <p>No products found.</p>}
+      {isLoading && (
+        <div className="card state-card">
+          <p className="text-muted">Loading products...</p>
+        </div>
+      )}
 
-        {products.map((product) => (
-          <div
-            key={product._id}
-            style={{
-              border: "1px solid #ccc",
-              borderRadius: "8px",
-              padding: "15px",
-              width: "200px",
-            }}
-          >
-            {/* Display first image */}
-            {product.images && product.images[0] && (
-              <img
-                src={product.images[0]}
-                alt={product.name}
-                style={{ width: "100%", height: "150px", objectFit: "cover", borderRadius: "5px" }}
-              />
-            )}
+      {!isLoading && error && (
+        <div className="card state-card">
+          <p className="error-text">{error}</p>
+        </div>
+      )}
 
-            <h3 style={{ margin: "10px 0 5px" }}>{product.name}</h3>
-            <p>₹{product.price}</p>
-          </div>
-        ))}
-      </div>
-    </div>
+      {!isLoading && !error && products.length === 0 && (
+        <div className="card state-card">
+          <p className="text-muted">No products found.</p>
+        </div>
+      )}
+
+      {!isLoading && !error && products.length > 0 && (
+        <div className="product-grid">
+          {products.map((product) => (
+            <ProductCard
+              key={product._id}
+              product={product}
+              to={product._id ? `/product/${product._id}` : undefined}
+              onClick={handleProductClick}
+            />
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 

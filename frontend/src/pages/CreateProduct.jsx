@@ -2,7 +2,6 @@ import { useState } from "react";
 import axios from "axios";
 
 function CreateProduct() {
-
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -12,6 +11,7 @@ function CreateProduct() {
   });
 
   const [images, setImages] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -21,16 +21,15 @@ function CreateProduct() {
   };
 
   const handleImageChange = (e) => {
-    setImages(e.target.files);
+    setImages(Array.from(e.target.files || []));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-
+      setIsSubmitting(true);
       const token = localStorage.getItem("token");
-
       const data = new FormData();
 
       data.append("name", formData.name);
@@ -39,7 +38,7 @@ function CreateProduct() {
       data.append("category", formData.category);
       data.append("status", formData.status);
 
-      for (let i = 0; i < images.length; i++) {
+      for (let i = 0; i < images.length; i += 1) {
         data.append("images", images[i]);
       }
 
@@ -55,102 +54,74 @@ function CreateProduct() {
       );
 
       alert("Product created successfully");
-
       console.log(res.data);
-
     } catch (error) {
-
       console.error("Product creation failed", error);
-
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div style={{ padding: "30px" }}>
-      <h2>Create Product</h2>
-
-      <form onSubmit={handleSubmit}>
-
+    <section className="page-shell">
+      <header className="hero">
         <div>
-          <label>Name</label><br/>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
+          <h1 className="title-xl">Create Product</h1>
+          <p className="text-muted">Add complete product details and upload images for listing.</p>
+        </div>
+      </header>
+
+      <form className="card create-form" onSubmit={handleSubmit}>
+        <div className="create-grid">
+          <div>
+            <label className="field-label" htmlFor="name">Product Name</label>
+            <input id="name" className="input" type="text" name="name" value={formData.name} onChange={handleChange} required />
+          </div>
+
+          <div>
+            <label className="field-label" htmlFor="category">Category</label>
+            <input id="category" className="input" type="text" name="category" value={formData.category} onChange={handleChange} required />
+          </div>
+
+          <div>
+            <label className="field-label" htmlFor="price">Price (INR)</label>
+            <input id="price" className="input" type="number" name="price" value={formData.price} onChange={handleChange} required />
+          </div>
+
+          <div>
+            <label className="field-label" htmlFor="status">Status</label>
+            <select id="status" className="select" name="status" value={formData.status} onChange={handleChange}>
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+            </select>
+          </div>
+
+          <div className="span-2">
+            <label className="field-label" htmlFor="description">Description</label>
+            <textarea id="description" className="textarea" name="description" value={formData.description} onChange={handleChange} required />
+          </div>
+
+          <div className="span-2">
+            <label className="field-label" htmlFor="images">Product Images</label>
+            <input id="images" className="file-input" type="file" multiple onChange={handleImageChange} />
+
+            {images.length > 0 && (
+              <ul className="file-list">
+                {images.map((file) => (
+                  <li key={`${file.name}-${file.lastModified}`}>{file.name}</li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
 
-        <br/>
-
-        <div>
-          <label>Description</label><br/>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            required
-          />
+        <div style={{ marginTop: "20px" }}>
+          <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+            {isSubmitting ? "Creating..." : "Create Product"}
+          </button>
         </div>
-
-        <br/>
-
-        <div>
-          <label>Price</label><br/>
-          <input
-            type="number"
-            name="price"
-            value={formData.price}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <br/>
-
-        <div>
-          <label>Category</label><br/>
-          <input
-            type="text"
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <br/>
-
-        <div>
-          <label>Status</label><br/>
-          <select
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-          >
-            <option value="published">Published</option>
-            <option value="draft">Draft</option>
-          </select>
-        </div>
-
-        <br/>
-
-        <div>
-          <label>Images</label><br/>
-          <input
-            type="file"
-            multiple
-            onChange={handleImageChange}
-          />
-        </div>
-
-        <br/>
-
-        <button type="submit">Create Product</button>
-
       </form>
-    </div>
+    </section>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import API from "../api/axios";
+import { clearAuth } from "../utils/auth";
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -19,11 +20,9 @@ export default function Signup() {
 
     try {
       await API.post("/auth/signup", form);
-
       alert("Signup successful");
-
-      // Redirect to marketplace after signup
-      navigate("/marketplace");
+      clearAuth();
+      navigate("/login");
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || "Signup failed");
@@ -31,47 +30,75 @@ export default function Signup() {
   };
 
   return (
-    <div style={{ padding: "30px" }}>
-      <h1>Signup</h1>
-      <form onSubmit={handleSubmit}>
+    <section className="auth-shell">
+      <div className="card auth-card">
+        <aside className="auth-aside">
+          <h1 className="title-xl">Join MarketNest</h1>
+          <p>Create your account to explore listings or publish products as a brand.</p>
+        </aside>
 
-        <input
-          placeholder="Name"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          style={{ display: "block", margin: "10px 0", padding: "8px", width: "250px" }}
-        />
+        <div className="auth-main">
+          <h2>Signup</h2>
+          <form onSubmit={handleSubmit} className="form-stack">
+            <div>
+              <label className="field-label" htmlFor="name">Name</label>
+              <input
+                id="name"
+                className="input"
+                placeholder="Your name"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+            </div>
 
-        <input
-          placeholder="Email"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          style={{ display: "block", margin: "10px 0", padding: "8px", width: "250px" }}
-        />
+            <div>
+              <label className="field-label" htmlFor="email">Email</label>
+              <input
+                id="email"
+                className="input"
+                placeholder="you@example.com"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
+            </div>
 
-        <input
-          placeholder="Password"
-          type="password"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          style={{ display: "block", margin: "10px 0", padding: "8px", width: "250px" }}
-        />
+            <div>
+              <label className="field-label" htmlFor="password">Password</label>
+              <input
+                id="password"
+                className="input"
+                placeholder="Create password"
+                type="password"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+              />
+            </div>
 
-        <select
-          value={form.role}
-          onChange={(e) => setForm({ ...form, role: e.target.value })}
-          style={{ display: "block", margin: "10px 0", padding: "8px", width: "265px" }}
-        >
-          <option value="customer">Customer</option>
-          <option value="brand">Brand</option>
-        </select>
+            <div>
+              <label className="field-label" htmlFor="role">Role</label>
+              <select
+                id="role"
+                className="select"
+                value={form.role}
+                onChange={(e) => setForm({ ...form, role: e.target.value })}
+              >
+                <option value="customer">Customer</option>
+                <option value="brand">Brand</option>
+              </select>
+            </div>
 
-        <button type="submit" style={{ padding: "8px 20px" }}>
-          Signup
-        </button>
+            <button type="submit" className="btn btn-primary">
+              Signup
+            </button>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
-      </form>
-    </div>
+            {error && <p className="error-text">{error}</p>}
+
+            <p className="text-muted">
+              Already have an account? <Link to="/login">Login</Link>
+            </p>
+          </form>
+        </div>
+      </div>
+    </section>
   );
 }

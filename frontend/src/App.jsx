@@ -8,6 +8,20 @@ import Marketplace from "./pages/Marketplace.jsx";
 import ProductDetails from "./pages/ProductDetails.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import CreateProduct from "./pages/CreateProduct.jsx";
+import { getRole, isAuthenticated } from "./utils/auth";
+
+function RequireBrand({ children }) {
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const role = getRole();
+  if (role !== "brand") {
+    return <Navigate to="/marketplace" replace />;
+  }
+
+  return children;
+}
 
 function App() {
   return (
@@ -22,8 +36,22 @@ function App() {
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/product/:id" element={<ProductDetails />} />
 
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/create-product" element={<CreateProduct />} />
+        <Route
+          path="/dashboard"
+          element={
+            <RequireBrand>
+              <Dashboard />
+            </RequireBrand>
+          }
+        />
+        <Route
+          path="/create-product"
+          element={
+            <RequireBrand>
+              <CreateProduct />
+            </RequireBrand>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
