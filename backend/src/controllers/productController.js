@@ -1,9 +1,38 @@
 const Product = require("../models/Product");
+const cloudinary = require("../config/cloudinary");
 
 exports.createProduct = async (req, res) => {
   try {
 
     const { name, description, price, category, status } = req.body;
+
+    const imageUrls = [];
+
+    if (req.files && req.files.length > 0) {
+
+      for (const file of req.files) {
+
+        const uploaded = await new Promise((resolve, reject) => {
+
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "marketnest-products" },
+            (error, result) => {
+
+              if (error) reject(error);
+              else resolve(result);
+
+            }
+          );
+
+          stream.end(file.buffer);
+
+        });
+
+        imageUrls.push(uploaded.secure_url);
+
+      }
+
+    }
 
     const product = await Product.create({
       name,
@@ -11,13 +40,16 @@ exports.createProduct = async (req, res) => {
       price,
       category,
       status,
+      images: imageUrls,
       brandId: req.user.id
     });
 
     res.status(201).json(product);
 
   } catch (error) {
+
     res.status(500).json({ message: "Product creation failed" });
+
   }
 };
 

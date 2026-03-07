@@ -4,11 +4,14 @@ const router = express.Router();
 const productController = require("../controllers/productController");
 const authMiddleware = require("../middleware/authMiddleware");
 const roleMiddleware = require("../middleware/roleMiddleware");
+const upload = require("../middleware/uploadMiddleware"); // add this line
+
 
 router.post(
   "/",
   authMiddleware,
   roleMiddleware("brand"),
+  upload.array("images", 5), // add this line
   productController.createProduct
 );
 
