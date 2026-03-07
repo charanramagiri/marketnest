@@ -51,10 +51,19 @@ function ProductDetails() {
 
   const images = useMemo(() => {
     if (!Array.isArray(product?.images)) return [];
-    return product.images.map((img) => resolveImageUrl(img)).filter(Boolean);
+    return product.images
+      .filter((img) => typeof img === "string" && img.trim().length > 0)
+      .map((img) => resolveImageUrl(img))
+      .filter(Boolean);
   }, [product]);
 
   const mainImage = images[activeIndex] || "";
+
+  useEffect(() => {
+    if (activeIndex >= images.length) {
+      setActiveIndex(0);
+    }
+  }, [images.length, activeIndex]);
 
   if (isLoading) {
     return (

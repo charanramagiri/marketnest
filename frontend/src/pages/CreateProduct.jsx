@@ -12,6 +12,7 @@ function CreateProduct() {
 
   const [images, setImages] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setFormData({
@@ -21,7 +22,15 @@ function CreateProduct() {
   };
 
   const handleImageChange = (e) => {
-    setImages(Array.from(e.target.files || []));
+    const selectedFiles = Array.from(e.target.files || []);
+    if (selectedFiles.length > 5) {
+      setError("You can upload a maximum of 5 images.");
+      setImages(selectedFiles.slice(0, 5));
+      return;
+    }
+
+    setError("");
+    setImages(selectedFiles);
   };
 
   const handleSubmit = async (e) => {
@@ -29,6 +38,13 @@ function CreateProduct() {
 
     try {
       setIsSubmitting(true);
+      setError("");
+
+      if (images.length > 5) {
+        setError("You can upload a maximum of 5 images.");
+        return;
+      }
+
       const token = localStorage.getItem("token");
       const data = new FormData();
 
@@ -47,8 +63,7 @@ function CreateProduct() {
         data,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data"
+            Authorization: `Bearer ${token}`
           }
         }
       );
@@ -57,6 +72,7 @@ function CreateProduct() {
       console.log(res.data);
     } catch (error) {
       console.error("Product creation failed", error);
+      setError(error.response?.data?.message || "Product creation failed");
     } finally {
       setIsSubmitting(false);
     }
@@ -103,6 +119,7 @@ function CreateProduct() {
 
           <div className="span-2">
             <label className="field-label" htmlFor="images">Product Images</label>
+            <p className="text-muted image-help-text">Upload up to 5 images.</p>
             <input id="images" className="file-input" type="file" multiple onChange={handleImageChange} />
 
             {images.length > 0 && (
@@ -114,6 +131,8 @@ function CreateProduct() {
             )}
           </div>
         </div>
+
+        {error && <p className="error-text edit-error">{error}</p>}
 
         <div style={{ marginTop: "20px" }}>
           <button type="submit" className="btn btn-primary" disabled={isSubmitting}>

@@ -19,6 +19,7 @@ router.put(
   "/:id",
   authMiddleware,
   roleMiddleware("brand"),
+  upload.array("images", 5),
   productController.updateProduct
 );
 

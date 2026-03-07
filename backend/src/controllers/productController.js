@@ -1,38 +1,34 @@
 const Product = require("../models/Product");
 const cloudinary = require("../config/cloudinary");
 
+const uploadFilesToCloudinary = async (files = []) => {
+  const imageUrls = [];
+
+  for (const file of files) {
+    const uploaded = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: "marketnest-products" },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+
+      stream.end(file.buffer);
+    });
+
+    imageUrls.push(uploaded.secure_url);
+  }
+
+  return imageUrls;
+};
+
 exports.createProduct = async (req, res) => {
   try {
 
     const { name, description, price, category, status } = req.body;
 
-    const imageUrls = [];
-
-    if (req.files && req.files.length > 0) {
-
-      for (const file of req.files) {
-
-        const uploaded = await new Promise((resolve, reject) => {
-
-          const stream = cloudinary.uploader.upload_stream(
-            { folder: "marketnest-products" },
-            (error, result) => {
-
-              if (error) reject(error);
-              else resolve(result);
-
-            }
-          );
-
-          stream.end(file.buffer);
-
-        });
-
-        imageUrls.push(uploaded.secure_url);
-
-      }
-
-    }
+    const imageUrls = await uploadFilesToCloudinary(req.files || []);
 
     const product = await Product.create({
       name,
@@ -67,7 +63,48 @@ exports.updateProduct = async (req, res) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    Object.assign(product, req.body);
+    const updatableFields = ["name", "description", "price", "category", "status", "isArchived"];
+
+    updatableFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        product[field] = req.body[field];
+      }
+    });
+
+    const hasKeepExistingImages = req.body.keepExistingImages !== undefined;
+    const hasNewImages = req.files && req.files.length > 0;
+
+    if (hasKeepExistingImages || hasNewImages) {
+      let keepExistingImages = [];
+
+      if (hasKeepExistingImages) {
+        const rawKeep = req.body.keepExistingImages;
+
+        if (Array.isArray(rawKeep)) {
+          keepExistingImages = rawKeep;
+        } else if (typeof rawKeep === "string") {
+          try {
+            const parsed = JSON.parse(rawKeep);
+            keepExistingImages = Array.isArray(parsed) ? parsed : [rawKeep];
+          } catch (error) {
+            keepExistingImages = rawKeep ? [rawKeep] : [];
+          }
+        }
+      } else {
+        keepExistingImages = product.images || [];
+      }
+
+      const allowedExisting = new Set(product.images || []);
+      const sanitizedExisting = keepExistingImages.filter((url) => allowedExisting.has(url));
+      const uploadedImages = await uploadFilesToCloudinary(req.files || []);
+      const mergedImages = [...sanitizedExisting, ...uploadedImages];
+
+      if (mergedImages.length > 5) {
+        return res.status(400).json({ message: "Maximum 5 images are allowed per product" });
+      }
+
+      product.images = mergedImages;
+    }
 
     await product.save();
 
