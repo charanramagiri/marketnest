@@ -125,6 +125,16 @@ img {
   transform: translateY(-1px);
 }
 
+.btn-success {
+  color: #ffffff;
+  background: linear-gradient(120deg, #059669, #047857);
+}
+
+.btn-success:hover:not(:disabled) {
+  background: linear-gradient(120deg, #047857, #065f46);
+  transform: translateY(-1px);
+}
+
 .input,
 .select,
 .textarea,

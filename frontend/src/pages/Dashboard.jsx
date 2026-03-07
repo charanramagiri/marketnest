@@ -11,10 +11,11 @@ function Dashboard() {
     published: 0,
     archived: 0,
   });
-  const [products, setProducts] = useState([]);
+  const [activeProducts, setActiveProducts] = useState([]);
+  const [archivedProducts, setArchivedProducts] = useState([]);
   const [isProductsLoading, setIsProductsLoading] = useState(true);
   const [productsError, setProductsError] = useState("");
-  const [isArchivingById, setIsArchivingById] = useState({});
+  const [pendingById, setPendingById] = useState({});
 
   const isBrand = useMemo(() => getRole() === "brand", []);
 
@@ -37,12 +38,18 @@ function Dashboard() {
     setProductsError("");
 
     try {
-      const res = await axios.get("http://localhost:5000/api/products/my", getAuthHeaders());
-      setProducts(Array.isArray(res.data) ? res.data : []);
+      const [activeRes, archivedRes] = await Promise.all([
+        axios.get("http://localhost:5000/api/products/my", getAuthHeaders()),
+        axios.get("http://localhost:5000/api/products/my?scope=archived", getAuthHeaders()),
+      ]);
+
+      setActiveProducts(Array.isArray(activeRes.data) ? activeRes.data : []);
+      setArchivedProducts(Array.isArray(archivedRes.data) ? archivedRes.data : []);
     } catch (error) {
       console.error("Error fetching brand products", error);
       setProductsError("Unable to load your products right now.");
-      setProducts([]);
+      setActiveProducts([]);
+      setArchivedProducts([]);
     } finally {
       setIsProductsLoading(false);
     }
@@ -66,14 +73,35 @@ function Dashboard() {
     }
 
     try {
-      setIsArchivingById((prev) => ({ ...prev, [productId]: true }));
+      setPendingById((prev) => ({ ...prev, [productId]: true }));
       await axios.delete(`http://localhost:5000/api/products/${productId}`, getAuthHeaders());
       await Promise.all([fetchDashboard(), fetchMyProducts()]);
     } catch (error) {
       console.error("Error archiving product", error);
       setProductsError(error.response?.data?.message || "Failed to archive product.");
     } finally {
-      setIsArchivingById((prev) => ({ ...prev, [productId]: false }));
+      setPendingById((prev) => ({ ...prev, [productId]: false }));
+    }
+  };
+
+  const handleRestore = async (productId) => {
+    if (!window.confirm("Restore this product?")) {
+      return;
+    }
+
+    try {
+      setPendingById((prev) => ({ ...prev, [productId]: true }));
+      await axios.put(
+        `http://localhost:5000/api/products/${productId}`,
+        { isArchived: false },
+        getAuthHeaders()
+      );
+      await Promise.all([fetchDashboard(), fetchMyProducts()]);
+    } catch (error) {
+      console.error("Error restoring product", error);
+      setProductsError(error.response?.data?.message || "Failed to restore product.");
+    } finally {
+      setPendingById((prev) => ({ ...prev, [productId]: false }));
     }
   };
 
@@ -109,8 +137,8 @@ function Dashboard() {
 
       <section className="brand-products-section">
         <div className="brand-products-head">
-          <h2>My Products</h2>
-          <p className="text-muted">Edit product details or archive products you no longer want listed.</p>
+          <h2>Active Products</h2>
+          <p className="text-muted">Edit active listings or archive products you no longer want visible.</p>
         </div>
 
         {isProductsLoading && (
@@ -125,15 +153,15 @@ function Dashboard() {
           </div>
         )}
 
-        {!isProductsLoading && !productsError && products.length === 0 && (
+        {!isProductsLoading && !productsError && activeProducts.length === 0 && (
           <div className="card state-card">
             <p className="text-muted">You have no active products yet.</p>
           </div>
         )}
 
-        {!isProductsLoading && !productsError && products.length > 0 && (
+        {!isProductsLoading && !productsError && activeProducts.length > 0 && (
           <div className="brand-products-grid">
-            {products.map((product) => (
+            {activeProducts.map((product) => (
               <ProductCard
                 key={product._id}
                 product={product}
@@ -152,11 +180,48 @@ function Dashboard() {
                         type="button"
                         className="btn btn-danger"
                         onClick={() => handleArchive(product._id)}
-                        disabled={Boolean(isArchivingById[product._id])}
+                        disabled={Boolean(pendingById[product._id])}
                       >
-                        {isArchivingById[product._id] ? "Archiving..." : "Archive"}
+                        {pendingById[product._id] ? "Archiving..." : "Archive"}
                       </button>
                     </>
+                  ) : null
+                }
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="brand-products-section">
+        <div className="brand-products-head">
+          <h2>Archived Products</h2>
+          <p className="text-muted">Restore products anytime to bring them back to active listings.</p>
+        </div>
+
+        {!isProductsLoading && !productsError && archivedProducts.length === 0 && (
+          <div className="card state-card">
+            <p className="text-muted">No archived products found.</p>
+          </div>
+        )}
+
+        {!isProductsLoading && !productsError && archivedProducts.length > 0 && (
+          <div className="brand-products-grid">
+            {archivedProducts.map((product) => (
+              <ProductCard
+                key={product._id}
+                product={product}
+                showStatus
+                actions={
+                  isBrand ? (
+                    <button
+                      type="button"
+                      className="btn btn-success"
+                      onClick={() => handleRestore(product._id)}
+                      disabled={Boolean(pendingById[product._id])}
+                    >
+                      {pendingById[product._id] ? "Restoring..." : "Restore"}
+                    </button>
                   ) : null
                 }
               />

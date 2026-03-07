@@ -105,13 +105,26 @@ exports.deleteProduct = async (req, res) => {
 
 
 exports.getMyProducts = async (req, res) => {
+  try {
+    const { scope } = req.query;
 
-  const products = await Product.find({
-    brandId: req.user.id,
-    isArchived: false
-  });
+    const query = {
+      brandId: req.user.id,
+    };
 
-  res.json(products);
+    if (scope === "archived") {
+      query.isArchived = true;
+    } else if (scope === "all") {
+      // no isArchived filter
+    } else {
+      query.isArchived = false;
+    }
+
+    const products = await Product.find(query).sort({ updatedAt: -1 });
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch brand products" });
+  }
 };
 
 
