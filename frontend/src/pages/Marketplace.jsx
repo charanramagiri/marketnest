@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import API from "../api";
+import API from "../api/api";
 import { useNavigate } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import { getRole, isAuthenticated } from "../utils/auth";

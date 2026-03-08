@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import API from "../api";
+import API from "../api/api";
 import ProductCard from "../components/ProductCard";
 import { getToken, getRole } from "../utils/auth";
 

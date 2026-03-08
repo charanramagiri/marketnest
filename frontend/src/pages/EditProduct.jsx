@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import API from "../api";
+import API from "../api/api";
 import { getToken } from "../utils/auth";
 
 const BACKEND_ORIGIN = "https://marketnest-backend-htxq.onrender.com";

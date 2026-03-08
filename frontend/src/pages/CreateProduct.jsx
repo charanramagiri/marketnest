@@ -1,5 +1,5 @@
 import { useState } from "react";
-import API from "../api";
+import API from "../api/api";
 
 function CreateProduct() {
   const [formData, setFormData] = useState({
