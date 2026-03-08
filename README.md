@@ -171,10 +171,9 @@ git clone https://github.com/charanramagiri/marketnest.git
 
 Backend setup
 
-
-cd backend
-npm install
-npm run dev
+cd backend  
+npm install  
+npm run dev  
 
 
 Frontend setup
