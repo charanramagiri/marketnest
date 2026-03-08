@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import API from "../api";
 
 function CreateProduct() {
   const [formData, setFormData] = useState({
@@ -58,8 +58,8 @@ function CreateProduct() {
         data.append("images", images[i]);
       }
 
-      const res = await axios.post(
-        "http://localhost:5000/api/products",
+      const res = await API.post(
+        "/products",
         data,
         {
           headers: {

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
 
-const BACKEND_ORIGIN = "http://localhost:5000";
+const BACKEND_ORIGIN = "https://marketnest-backend-htxq.onrender.com";
 
 function resolveImageUrl(value) {
   if (!value) return "";

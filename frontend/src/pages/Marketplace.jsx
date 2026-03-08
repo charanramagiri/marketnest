@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import API from "../api";
 import { useNavigate } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import { getRole, isAuthenticated } from "../utils/auth";
@@ -35,7 +35,7 @@ function Marketplace() {
           params.category = selectedCategory;
         }
 
-        const res = await axios.get("http://localhost:5000/api/marketplace/products", { params });
+        const res = await API.get("/marketplace/products", { params });
         const fetchedProducts = res.data?.products || [];
         const fetchedTotal = Number(res.data?.total || 0);
         const computedTotalPages = Math.max(1, Math.ceil(fetchedTotal / limit));

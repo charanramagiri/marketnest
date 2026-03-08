@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import axios from "axios";
+import API from "../api";
 
-const BACKEND_ORIGIN = "http://localhost:5000";
+const BACKEND_ORIGIN = "https://marketnest-backend-htxq.onrender.com";
 
 function resolveImageUrl(value) {
   if (!value) return "";
@@ -26,10 +26,10 @@ function ProductDetails() {
         let productData = null;
 
         try {
-          const detailRes = await axios.get(`http://localhost:5000/api/marketplace/products/${id}`);
+          const detailRes = await API.get(`/marketplace/products/${id}`);
           productData = detailRes.data?.product || detailRes.data;
         } catch (detailError) {
-          const listRes = await axios.get("http://localhost:5000/api/marketplace/products");
+          const listRes = await API.get("/marketplace/products");
           productData = (listRes.data?.products || []).find((item) => item._id === id) || null;
           if (!productData) {
             throw detailError;

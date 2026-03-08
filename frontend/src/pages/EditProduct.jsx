@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import API from "../api";
 import { getToken } from "../utils/auth";
 
-const BACKEND_ORIGIN = "http://localhost:5000";
+const BACKEND_ORIGIN = "https://marketnest-backend-htxq.onrender.com";
 const MAX_IMAGES = 5;
 
 const INITIAL_FORM = {
@@ -38,11 +38,11 @@ function EditProduct() {
 
       try {
         const token = getToken();
-        const res = await axios.get("http://localhost:5000/api/products/my?scope=all", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await API.get("/products/my?scope=all", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
         const products = Array.isArray(res.data) ? res.data : [];
         const product = products.find((item) => item._id === id);
@@ -133,7 +133,7 @@ function EditProduct() {
         payload.append("images", file);
       });
 
-      await axios.put(`http://localhost:5000/api/products/${id}`, payload, {
+      await API.put(`/products/${id}`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

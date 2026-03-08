@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../api";
 import ProductCard from "../components/ProductCard";
 import { getToken, getRole } from "../utils/auth";
 
@@ -29,7 +29,7 @@ function Dashboard() {
   }, []);
 
   const fetchDashboard = useCallback(async () => {
-    const res = await axios.get("http://localhost:5000/api/products/dashboard", getAuthHeaders());
+    const res = await API.get("/products/dashboard", getAuthHeaders());
     setData(res.data || { totalProducts: 0, published: 0, archived: 0 });
   }, [getAuthHeaders]);
 
@@ -39,8 +39,8 @@ function Dashboard() {
 
     try {
       const [activeRes, archivedRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/products/my", getAuthHeaders()),
-        axios.get("http://localhost:5000/api/products/my?scope=archived", getAuthHeaders()),
+        API.get("/products/my", getAuthHeaders()),
+        API.get("/products/my?scope=archived", getAuthHeaders()),
       ]);
 
       setActiveProducts(Array.isArray(activeRes.data) ? activeRes.data : []);
@@ -74,7 +74,7 @@ function Dashboard() {
 
     try {
       setPendingById((prev) => ({ ...prev, [productId]: true }));
-      await axios.delete(`http://localhost:5000/api/products/${productId}`, getAuthHeaders());
+      await API.delete(`/products/${productId}`, getAuthHeaders());
       await Promise.all([fetchDashboard(), fetchMyProducts()]);
     } catch (error) {
       console.error("Error archiving product", error);
@@ -91,8 +91,8 @@ function Dashboard() {
 
     try {
       setPendingById((prev) => ({ ...prev, [productId]: true }));
-      await axios.put(
-        `http://localhost:5000/api/products/${productId}`,
+      await API.put(
+        `/products/${productId}`,
         { isArchived: false },
         getAuthHeaders()
       );
