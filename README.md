@@ -101,24 +101,24 @@ Images → Cloudinary
 ### Backend
 
 
-backend/
-src/
-config/
-controllers/
-middleware/
-models/
-routes/
-utils/
+backend/  
+src/  
+config/  
+controllers/  
+middleware/  
+models/  
+routes/  
+utils/  
 
 
 ### Frontend
 
 
-frontend/
-src/
-api/
-pages/
-components/
+frontend/  
+src/  
+api/  
+pages/  
+components/  
 
 
 ---
@@ -178,10 +178,9 @@ npm run dev
 
 Frontend setup
 
-
-cd frontend
-npm install
-npm run dev
+cd frontend  
+npm install  
+npm run dev  
 
 
 ---
@@ -190,13 +189,12 @@ npm run dev
 
 Backend requires:
 
-
-MONGO_URI=
-JWT_SECRET=
-JWT_REFRESH_SECRET=
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
+MONGO_URI=  
+JWT_SECRET=  
+JWT_REFRESH_SECRET=  
+CLOUDINARY_CLOUD_NAME=  
+CLOUDINARY_API_KEY=  
+CLOUDINARY_API_SECRET=    
 
 
 ---
