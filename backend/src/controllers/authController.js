@@ -11,6 +11,12 @@ const generateOtp = require("../utils/generateOtp");
 
 const otpEmailTemplate = require("../services/otpEmailTemplate");
 
+// const validateSignupData = require("../utils/validators");
+
+const {
+  validateSignupData
+} = require("../utils/validators");
+
 const {
   generateAccessToken,
   generateRefreshToken
@@ -24,6 +30,14 @@ exports.signup = async (req, res) => {
   try {
 
     const { name, email, password, role } = req.body;
+
+    const validationError = validateSignupData({ name, email, password, role });
+
+    if (validationError) {
+      return res.status(400).json({
+        message: validationError
+      });
+    }
 
     // Check if user already exists
 
@@ -243,6 +257,49 @@ exports.verifyOtp = async (req, res) => {
 
     res.status(500).json({
       message: "OTP verification failed"
+    });
+  }
+};
+
+// RESEND OTP
+exports.resendOtp = async (req, res) => {
+  try {
+
+    const { email } = req.body;
+
+    const otpRecord = await Otp.findOne({ email });
+
+    if (!otpRecord) {
+      return res.status(400).json({
+        message: "No pending verification found"
+      });
+    }
+
+    const newOtp = generateOtp();
+
+    otpRecord.otp = newOtp;
+    otpRecord.expiresAt = new Date(
+      Date.now() + 5 * 60 * 1000
+    );
+
+    await otpRecord.save();
+
+    await sendEmail(
+      email,
+      "MarketNest Verification OTP",
+      otpEmailTemplate(newOtp)
+    );
+
+    res.json({
+      message: "OTP resent successfully"
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      message: "Failed to resend OTP"
     });
   }
 };

@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar.jsx";
 
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
+import VerifyOtp from "./pages/VerifyOtp";
 import Marketplace from "./pages/Marketplace.jsx";
 import ProductDetails from "./pages/ProductDetails.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
@@ -46,6 +47,7 @@ function App() {
 
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/verify-otp" element={<VerifyOtp />} />
 
         <Route path="/marketplace" element={<Marketplace />} />
         <Route
