@@ -3,10 +3,20 @@ const jwt = require("jsonwebtoken");
 
 const User = require("../models/User");
 
+const { sendEmail } = require("../services/emailService");
+
+const Otp = require("../models/Otp");
+
+const generateOtp = require("../utils/generateOtp");
+
+const otpEmailTemplate = require("../services/otpEmailTemplate");
+
 const {
   generateAccessToken,
   generateRefreshToken
 } = require("../utils/jwt");
+
+
 
 
 // SIGNUP
@@ -15,27 +25,58 @@ exports.signup = async (req, res) => {
 
     const { name, email, password, role } = req.body;
 
+    // Check if user already exists
+
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({
+        message: "User already exists"
+      });
     }
+
+    // Remove previous OTP if exists
+
+    await Otp.deleteMany({ email });
+
+    // Hash password
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
-      name,
+    // Generate OTP
+
+    const otp = generateOtp();
+
+    // Save OTP record
+
+    await Otp.create({
       email,
+      otp,
+      name,
       password: hashedPassword,
-      role
+      role,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000)
     });
 
-    res.status(201).json({
-      message: "User created successfully"
+    // Send OTP Email
+
+    await sendEmail(
+      email,
+      "MarketNest Verification OTP",
+      otpEmailTemplate(otp)
+    );
+
+    res.status(200).json({
+      message: "OTP sent successfully"
     });
 
   } catch (error) {
-    res.status(500).json({ message: "Signup failed" });
+
+    console.error(error);
+
+    res.status(500).json({
+      message: "Signup failed"
+    });
   }
 };
 
@@ -120,4 +161,88 @@ exports.logout = async (req, res) => {
   res.json({
     message: "Logged out successfully"
   });
+};
+
+// TEST EMAIL
+exports.testEmail = async (req, res) => {
+  try {
+
+    await sendEmail(
+      req.body.email,
+      "MarketNest Test Email",
+      `
+        <h2>MarketNest</h2>
+        <p>Email service is working successfully.</p>
+      `
+    );
+
+    res.json({
+      message: "Email sent successfully"
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      message: "Failed to send email"
+    });
+
+  }
+};
+
+// VERIFY OTP
+exports.verifyOtp = async (req, res) => {
+  try {
+
+    const { email, otp } = req.body;
+
+    const otpRecord = await Otp.findOne({ email });
+
+    if (!otpRecord) {
+      return res.status(400).json({
+        message: "OTP not found"
+      });
+    }
+
+    // Check expiry
+    if (otpRecord.expiresAt < new Date()) {
+
+      await Otp.deleteOne({ _id: otpRecord._id });
+
+      return res.status(400).json({
+        message: "OTP expired"
+      });
+    }
+
+    // Check OTP match
+    if (otpRecord.otp !== otp) {
+      return res.status(400).json({
+        message: "Invalid OTP"
+      });
+    }
+
+    // Create user
+    await User.create({
+      name: otpRecord.name,
+      email: otpRecord.email,
+      password: otpRecord.password,
+      role: otpRecord.role
+    });
+
+    // Remove OTP record
+    await Otp.deleteOne({ _id: otpRecord._id });
+
+    res.status(201).json({
+      message: "Account verified successfully"
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      message: "OTP verification failed"
+    });
+  }
 };
