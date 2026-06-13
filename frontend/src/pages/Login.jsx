@@ -68,6 +68,12 @@ export default function Login() {
               />
             </div>
 
+            <p className="text-muted">  
+              <Link to="/forgot-password">
+                Forgot Password?
+              </Link>
+            </p>
+
             <button type="button" onClick={login} className="btn btn-primary">
               Login
             </button>

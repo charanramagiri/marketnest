@@ -66,9 +66,12 @@ exports.signup = async (req, res) => {
     await Otp.create({
       email,
       otp,
+      purpose: "signup",
+    
       name,
       password: hashedPassword,
       role,
+    
       expiresAt: new Date(Date.now() + 5 * 60 * 1000)
     });
 
@@ -211,7 +214,7 @@ exports.verifyOtp = async (req, res) => {
 
     const { email, otp } = req.body;
 
-    const otpRecord = await Otp.findOne({ email });
+    const otpRecord = await Otp.findOne({ email, purpose: "signup" });
 
     if (!otpRecord) {
       return res.status(400).json({
@@ -267,7 +270,10 @@ exports.resendOtp = async (req, res) => {
 
     const { email } = req.body;
 
-    const otpRecord = await Otp.findOne({ email });
+    const otpRecord = await Otp.findOne({
+      email,
+      purpose: "signup"
+    });
 
     if (!otpRecord) {
       return res.status(400).json({
@@ -300,6 +306,155 @@ exports.resendOtp = async (req, res) => {
 
     res.status(500).json({
       message: "Failed to resend OTP"
+    });
+  }
+};
+
+// FORGOT PASSWORD
+exports.forgotPassword = async (req, res) => {
+  try {
+
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    await Otp.deleteMany({
+      email,
+      purpose: "reset-password"
+    });
+
+    const otp = generateOtp();
+
+    await Otp.create({
+      email,
+      otp,
+      purpose: "reset-password",
+      isVerified: false,
+      expiresAt: new Date(
+        Date.now() + 5 * 60 * 1000
+      )
+    });
+
+    await sendEmail(
+      email,
+      "MarketNest Password Reset OTP",
+      otpEmailTemplate(otp)
+    );
+
+    res.json({
+      message: "Password reset OTP sent"
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      message: "Failed to send reset OTP"
+    });
+  }
+};
+
+// VERIFY RESET OTP
+exports.verifyResetOtp = async (req, res) => {
+  try {
+
+    const { email, otp } = req.body;
+
+    const otpRecord = await Otp.findOne({
+      email,
+      purpose: "reset-password"
+    });
+
+    if (!otpRecord) {
+      return res.status(400).json({
+        message: "OTP not found"
+      });
+    }
+
+    if (otpRecord.expiresAt < new Date()) {
+
+      await Otp.deleteOne({
+        _id: otpRecord._id
+      });
+
+      return res.status(400).json({
+        message: "OTP expired"
+      });
+    }
+
+    if (otpRecord.otp !== otp) {
+      return res.status(400).json({
+        message: "Invalid OTP"
+      });
+    }
+
+    otpRecord.isVerified = true;
+
+    await otpRecord.save();
+
+    res.json({
+      message: "OTP verified successfully"
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      message: "OTP verification failed"
+    });
+  }
+};
+
+// RESET PASSWORD
+exports.resetPassword = async (req, res) => {
+  try {
+
+    const { email, password } = req.body;
+
+    const otpRecord = await Otp.findOne({
+      email,
+      purpose: "reset-password"
+    });
+
+    if (!otpRecord || !otpRecord.isVerified) {
+      return res.status(400).json({
+        message: "OTP verification required"
+      });
+    }
+
+    const hashedPassword =
+      await bcrypt.hash(password, 10);
+
+    await User.findOneAndUpdate(
+      { email },
+      {
+        password: hashedPassword
+      }
+    );
+
+    await Otp.deleteMany({
+      email,
+      purpose: "reset-password"
+    });
+
+    res.json({
+      message: "Password updated successfully"
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      message: "Password reset failed"
     });
   }
 };

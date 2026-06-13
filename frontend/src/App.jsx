@@ -5,6 +5,9 @@ import Navbar from "./components/Navbar.jsx";
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import VerifyOtp from "./pages/VerifyOtp";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import VerifyResetOtp from "./pages/VerifyResetOtp.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 import Marketplace from "./pages/Marketplace.jsx";
 import ProductDetails from "./pages/ProductDetails.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
@@ -47,7 +50,10 @@ function App() {
 
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
+        <Route path="/verify-reset-otp" element={<VerifyResetOtp />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route path="/marketplace" element={<Marketplace />} />
         <Route
@@ -58,6 +64,7 @@ function App() {
             </RequireCustomer>
           }
         />
+        
 
         <Route
           path="/dashboard"
