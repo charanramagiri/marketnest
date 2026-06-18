@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import API from "../api/api";
+import { resendOtp as resendOtpRequest, verifyOtp as verifyOtpRequest } from "../api/auth.api";
 
 export default function VerifyOtp() {
   const location = useLocation();
@@ -26,14 +26,14 @@ export default function VerifyOtp() {
     if (!finalEmail) {
       navigate("/signup", { replace: true });
     }
-  }, []);
+  }, [location.state?.email, navigate]);
 
   // VERIFY OTP
   const verifyOtp = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await API.post("/auth/verify-otp", {
+      const res = await verifyOtpRequest({
         email,
         otp
       });
@@ -58,7 +58,7 @@ export default function VerifyOtp() {
   // RESEND OTP
   const resendOtp = async () => {
     try {
-      const res = await API.post("/auth/resend-otp", {
+      const res = await resendOtpRequest({
         email
       });
 

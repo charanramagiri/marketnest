@@ -1,5 +1,5 @@
 import { useState } from "react";
-import API from "../api/api";
+import { createProduct } from "../api/products.api";
 
 function CreateProduct() {
   const [formData, setFormData] = useState({
@@ -45,7 +45,6 @@ function CreateProduct() {
         return;
       }
 
-      const token = localStorage.getItem("token");
       const data = new FormData();
 
       data.append("name", formData.name);
@@ -58,18 +57,15 @@ function CreateProduct() {
         data.append("images", images[i]);
       }
 
-      const res = await API.post(
-        "/products",
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
-      alert("Product created successfully");
-      console.log(res.data);
+      await createProduct(data);
+      setFormData({
+        name: "",
+        description: "",
+        price: "",
+        category: "",
+        status: "published"
+      });
+      setImages([]);
     } catch (error) {
       console.error("Product creation failed", error);
       setError(error.response?.data?.message || "Product creation failed");

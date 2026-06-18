@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const env = require("./env");
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -6,20 +7,22 @@ const transporter = nodemailer.createTransport({
   secure: false,
   requireTLS: true,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    user: env.email.user,
+    pass: env.email.pass
   },
   connectionTimeout: 30000,
   greetingTimeout: 30000,
   socketTimeout: 30000
 });
 
-transporter.verify((error, success) => {
-  if (error) {
-    console.log("EMAIL ERROR:", error);
-  } else {
-    console.log("Email server ready");
-  }
-});
+if (process.env.VERIFY_EMAIL_TRANSPORT === "true") {
+  transporter.verify((error) => {
+    if (error) {
+      console.log("EMAIL ERROR:", error);
+    } else {
+      console.log("Email server ready");
+    }
+  });
+}
 
 module.exports = transporter;

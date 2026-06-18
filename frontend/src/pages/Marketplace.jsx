@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import API from "../api/api";
+import { getProducts } from "../api/marketplace.api";
 import { useNavigate } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import { getRole, isAuthenticated } from "../utils/auth";
@@ -35,7 +35,7 @@ function Marketplace() {
           params.category = selectedCategory;
         }
 
-        const res = await API.get("/marketplace/products", { params });
+        const res = await getProducts(params);
         const fetchedProducts = res.data?.products || [];
         const fetchedTotal = Number(res.data?.total || 0);
         const computedTotalPages = Math.max(1, Math.ceil(fetchedTotal / limit));
@@ -74,14 +74,13 @@ function Marketplace() {
   const handleProductClick = (event) => {
     if (!isAuthenticated()) {
       event.preventDefault();
-      alert("Please login to view product details.");
       navigate("/login");
       return;
     }
 
     if (getRole() !== "customer") {
       event.preventDefault();
-      alert("Only customers can view product details.");
+      setError("Only customers can view product details.");
       navigate("/marketplace");
     }
   };

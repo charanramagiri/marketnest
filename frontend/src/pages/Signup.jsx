@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import API from "../api/api";
+import { signup } from "../api/auth.api";
+import { validateSignupForm } from "../utils/validation";
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -15,39 +16,10 @@ export default function Signup() {
 
   const [error, setError] = useState("");
 
-  const validateForm = () => {
-
-    const emailRegex =
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-  
-    if (!form.name.trim()) {
-      return "Name is required";
-    }
-  
-    if (!emailRegex.test(form.email)) {
-      return "Please enter a valid email";
-    }
-  
-    if (!passwordRegex.test(form.password)) {
-      return "Password must contain at least 8 characters, uppercase, lowercase, number and special character";
-    }
-  
-    if (
-      form.password !== form.confirmPassword
-    ) {
-      return "Passwords do not match";
-    }
-  
-    return null;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const validationError = validateForm();
+    const validationError = validateSignupForm(form);
 
     if (validationError) {
       setError(validationError);
@@ -62,7 +34,7 @@ export default function Signup() {
         role: form.role
       };
       
-      await API.post("/auth/signup", signupData);
+      await signup(signupData);
 
       localStorage.setItem(
         "pendingVerificationEmail",

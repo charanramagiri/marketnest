@@ -1,14 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import API from "../api/api";
-
-const BACKEND_ORIGIN = "https://marketnest-backend-htxq.onrender.com";
-
-function resolveImageUrl(value) {
-  if (!value) return "";
-  if (value.startsWith("http://") || value.startsWith("https://")) return value;
-  return `${BACKEND_ORIGIN}${value.startsWith("/") ? "" : "/"}${value}`;
-}
+import { getProductDetails, getProducts } from "../api/marketplace.api";
+import { resolveImageUrl } from "../utils/imageUrl";
 
 function ProductDetails() {
   const { id } = useParams();
@@ -26,10 +19,10 @@ function ProductDetails() {
         let productData = null;
 
         try {
-          const detailRes = await API.get(`/marketplace/products/${id}`);
+          const detailRes = await getProductDetails(id);
           productData = detailRes.data?.product || detailRes.data;
         } catch (detailError) {
-          const listRes = await API.get("/marketplace/products");
+          const listRes = await getProducts();
           productData = (listRes.data?.products || []).find((item) => item._id === id) || null;
           if (!productData) {
             throw detailError;

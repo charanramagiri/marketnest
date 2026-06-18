@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import API from "../api/api";
 import ProductCard from "../components/ProductCard";
-import { getToken, getRole } from "../utils/auth";
+import { archiveProduct, getDashboard, getMyProducts, updateProduct } from "../api/products.api";
+import { getRole } from "../utils/auth";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -16,22 +16,14 @@ function Dashboard() {
   const [isProductsLoading, setIsProductsLoading] = useState(true);
   const [productsError, setProductsError] = useState("");
   const [pendingById, setPendingById] = useState({});
+  const [confirmAction, setConfirmAction] = useState(null);
 
   const isBrand = useMemo(() => getRole() === "brand", []);
 
-  const getAuthHeaders = useCallback(() => {
-    const token = getToken();
-    return {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-  }, []);
-
   const fetchDashboard = useCallback(async () => {
-    const res = await API.get("/products/dashboard", getAuthHeaders());
+    const res = await getDashboard();
     setData(res.data || { totalProducts: 0, published: 0, archived: 0 });
-  }, [getAuthHeaders]);
+  }, []);
 
   const fetchMyProducts = useCallback(async () => {
     setIsProductsLoading(true);
@@ -39,8 +31,8 @@ function Dashboard() {
 
     try {
       const [activeRes, archivedRes] = await Promise.all([
-        API.get("/products/my", getAuthHeaders()),
-        API.get("/products/my?scope=archived", getAuthHeaders()),
+        getMyProducts(),
+        getMyProducts({ scope: "archived" }),
       ]);
 
       setActiveProducts(Array.isArray(activeRes.data) ? activeRes.data : []);
@@ -53,7 +45,7 @@ function Dashboard() {
     } finally {
       setIsProductsLoading(false);
     }
-  }, [getAuthHeaders]);
+  }, []);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -68,13 +60,9 @@ function Dashboard() {
   }, [fetchDashboard, fetchMyProducts]);
 
   const handleArchive = async (productId) => {
-    if (!window.confirm("Archive this product?")) {
-      return;
-    }
-
     try {
       setPendingById((prev) => ({ ...prev, [productId]: true }));
-      await API.delete(`/products/${productId}`, getAuthHeaders());
+      await archiveProduct(productId);
       await Promise.all([fetchDashboard(), fetchMyProducts()]);
     } catch (error) {
       console.error("Error archiving product", error);
@@ -85,17 +73,9 @@ function Dashboard() {
   };
 
   const handleRestore = async (productId) => {
-    if (!window.confirm("Restore this product?")) {
-      return;
-    }
-
     try {
       setPendingById((prev) => ({ ...prev, [productId]: true }));
-      await API.put(
-        `/products/${productId}`,
-        { isArchived: false },
-        getAuthHeaders()
-      );
+      await updateProduct(productId, { isArchived: false });
       await Promise.all([fetchDashboard(), fetchMyProducts()]);
     } catch (error) {
       console.error("Error restoring product", error);
@@ -103,6 +83,32 @@ function Dashboard() {
     } finally {
       setPendingById((prev) => ({ ...prev, [productId]: false }));
     }
+  };
+
+  const requestProductAction = (type, productId) => {
+    setConfirmAction({
+      type,
+      productId,
+      title: type === "archive" ? "Archive Product" : "Restore Product",
+      message:
+        type === "archive"
+          ? "This product will be hidden from the marketplace."
+          : "This product will return to your active listings.",
+    });
+  };
+
+  const confirmProductAction = async () => {
+    if (!confirmAction) return;
+
+    const action = confirmAction;
+    setConfirmAction(null);
+
+    if (action.type === "archive") {
+      await handleArchive(action.productId);
+      return;
+    }
+
+    await handleRestore(action.productId);
   };
 
   return (
@@ -179,7 +185,7 @@ function Dashboard() {
                       <button
                         type="button"
                         className="btn btn-danger"
-                        onClick={() => handleArchive(product._id)}
+                        onClick={() => requestProductAction("archive", product._id)}
                         disabled={Boolean(pendingById[product._id])}
                       >
                         {pendingById[product._id] ? "Archiving..." : "Archive"}
@@ -217,7 +223,7 @@ function Dashboard() {
                     <button
                       type="button"
                       className="btn btn-success"
-                      onClick={() => handleRestore(product._id)}
+                      onClick={() => requestProductAction("restore", product._id)}
                       disabled={Boolean(pendingById[product._id])}
                     >
                       {pendingById[product._id] ? "Restoring..." : "Restore"}
@@ -229,6 +235,23 @@ function Dashboard() {
           </div>
         )}
       </section>
+
+      {confirmAction && (
+        <div className="modal-backdrop">
+          <div className="card confirm-modal">
+            <h2>{confirmAction.title}</h2>
+            <p className="text-muted">{confirmAction.message}</p>
+            <div className="confirm-actions">
+              <button type="button" className="btn btn-soft" onClick={() => setConfirmAction(null)}>
+                Cancel
+              </button>
+              <button type="button" className="btn btn-primary" onClick={confirmProductAction}>
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

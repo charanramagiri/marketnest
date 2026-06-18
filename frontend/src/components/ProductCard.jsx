@@ -1,13 +1,6 @@
 import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
-
-const BACKEND_ORIGIN = "https://marketnest-backend-htxq.onrender.com";
-
-function resolveImageUrl(value) {
-  if (!value) return "";
-  if (value.startsWith("http://") || value.startsWith("https://")) return value;
-  return `${BACKEND_ORIGIN}${value.startsWith("/") ? "" : "/"}${value}`;
-}
+import { resolveImageUrl } from "../utils/imageUrl";
 
 function ProductCard({ product, to, onClick, actions = null, showStatus = true }) {
   const [imageError, setImageError] = useState(false);

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../api/api";
+import { resetPassword as resetPasswordRequest } from "../api/auth.api";
+import { validateResetPassword } from "../utils/validation";
 
 export default function ResetPassword() {
 
@@ -8,6 +9,8 @@ export default function ResetPassword() {
 
   const email =
     localStorage.getItem("resetEmail") || "";
+  const resetToken =
+    localStorage.getItem("resetToken") || "";
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] =
@@ -17,32 +20,16 @@ export default function ResetPassword() {
 
   useEffect(() => {
 
-    if (!email) {
+    if (!email || !resetToken) {
       navigate("/forgot-password");
     }
 
-  }, [email, navigate]);
-
-  const validatePassword = () => {
-
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
-    if (!passwordRegex.test(password)) {
-      return "Password must contain at least 8 characters, uppercase, lowercase, number and special character";
-    }
-
-    if (password !== confirmPassword) {
-      return "Passwords do not match";
-    }
-
-    return null;
-  };
+  }, [email, resetToken, navigate]);
 
   const resetPassword = async () => {
 
     const validationError =
-      validatePassword();
+      validateResetPassword(password, confirmPassword);
 
     if (validationError) {
       setError(validationError);
@@ -51,20 +38,13 @@ export default function ResetPassword() {
 
     try {
 
-      await API.post(
-        "/auth/reset-password",
-        {
-          email,
-          password
-        }
-      );
+      await resetPasswordRequest({ email, password, resetToken });
 
       localStorage.removeItem(
         "resetEmail"
       );
-
-      alert(
-        "Password updated successfully"
+      localStorage.removeItem(
+        "resetToken"
       );
 
       navigate("/login");

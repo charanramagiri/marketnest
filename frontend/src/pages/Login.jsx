@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import API from "../api/api";
+import { login as loginRequest } from "../api/auth.api";
 import { getRoleFromToken, setAuth } from "../utils/auth";
 
 export default function Login() {
@@ -12,7 +12,7 @@ export default function Login() {
 
   const login = async () => {
     try {
-      const res = await API.post("/auth/login", {
+      const res = await loginRequest({
         email,
         password
       });
@@ -26,7 +26,6 @@ export default function Login() {
       }
 
       setAuth({ token, role });
-      alert("Login success");
       navigate("/marketplace");
     } catch (err) {
       console.error(err);

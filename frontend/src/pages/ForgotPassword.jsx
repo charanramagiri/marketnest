@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../api/api";
+import { forgotPassword } from "../api/auth.api";
+import { validateEmail } from "../utils/validation";
 
 export default function ForgotPassword() {
 
@@ -10,13 +11,16 @@ export default function ForgotPassword() {
   const [error, setError] = useState("");
 
   const sendOtp = async () => {
+    const validationError = validateEmail(email);
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
     try {
 
-      await API.post(
-        "/auth/forgot-password",
-        { email }
-      );
+      await forgotPassword({ email });
 
       localStorage.setItem(
         "resetEmail",

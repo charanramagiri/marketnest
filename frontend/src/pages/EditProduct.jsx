@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import API from "../api/api";
-import { getToken } from "../utils/auth";
+import { getMyProducts, updateProduct } from "../api/products.api";
+import { resolveImageUrl } from "../utils/imageUrl";
 
-const BACKEND_ORIGIN = "https://marketnest-backend-htxq.onrender.com";
 const MAX_IMAGES = 5;
 
 const INITIAL_FORM = {
@@ -13,12 +12,6 @@ const INITIAL_FORM = {
   category: "",
   status: "draft",
 };
-
-function resolveImageUrl(value) {
-  if (!value) return "";
-  if (value.startsWith("http://") || value.startsWith("https://")) return value;
-  return `${BACKEND_ORIGIN}${value.startsWith("/") ? "" : "/"}${value}`;
-}
 
 function EditProduct() {
   const { id } = useParams();
@@ -37,12 +30,7 @@ function EditProduct() {
       setError("");
 
       try {
-        const token = getToken();
-        const res = await API.get("/products/my?scope=all", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+        const res = await getMyProducts({ scope: "all" });
 
         const products = Array.isArray(res.data) ? res.data : [];
         const product = products.find((item) => item._id === id);
@@ -119,7 +107,6 @@ function EditProduct() {
         return;
       }
 
-      const token = getToken();
       const payload = new FormData();
 
       payload.append("name", formData.name);
@@ -133,13 +120,8 @@ function EditProduct() {
         payload.append("images", file);
       });
 
-      await API.put(`/products/${id}`, payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await updateProduct(id, payload);
 
-      alert("Product updated successfully");
       navigate("/dashboard");
     } catch (submitError) {
       console.error("Failed to update product", submitError);

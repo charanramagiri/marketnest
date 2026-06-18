@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { logout } from "../api/auth.api";
 import { clearAuth, getRole, isAuthenticated } from "../utils/auth";
 
 function Navbar() {
@@ -6,7 +7,13 @@ function Navbar() {
   const loggedIn = isAuthenticated();
   const role = getRole();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch {
+      // Local logout still protects the UI if the server session is already gone.
+    }
+
     clearAuth();
     navigate("/login");
   };

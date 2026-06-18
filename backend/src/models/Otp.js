@@ -7,7 +7,7 @@ const otpSchema = new mongoose.Schema(
       required: true
     },
 
-    otp: {
+    otpHash: {
       type: String,
       required: true
     },
@@ -21,6 +21,23 @@ const otpSchema = new mongoose.Schema(
     isVerified: {
       type: Boolean,
       default: false
+    },
+
+    attempts: {
+      type: Number,
+      default: 0
+    },
+
+    resendAvailableAt: {
+      type: Date
+    },
+
+    resetTokenHash: {
+      type: String
+    },
+
+    resetTokenExpiresAt: {
+      type: Date
     },
 
     // Only used during signup
@@ -47,5 +64,7 @@ const otpSchema = new mongoose.Schema(
     timestamps: true
   }
 );
+
+otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 module.exports = mongoose.model("Otp", otpSchema);

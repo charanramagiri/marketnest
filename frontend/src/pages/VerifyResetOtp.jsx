@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../api/api";
+import { verifyResetOtp } from "../api/auth.api";
 
 export default function VerifyResetOtp() {
 
@@ -24,17 +24,11 @@ export default function VerifyResetOtp() {
 
     try {
 
-      await API.post(
-        "/auth/verify-reset-otp",
-        {
-          email,
-          otp
-        }
-      );
+      const res = await verifyResetOtp({ email, otp });
 
       localStorage.setItem(
-        "resetOtpVerified",
-        "true"
+        "resetToken",
+        res.data?.resetToken || ""
       );
       
       navigate("/reset-password");
