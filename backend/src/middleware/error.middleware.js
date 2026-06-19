@@ -15,7 +15,7 @@ const errorHandler = (error, req, res, next) => {
     payload.details = error.details;
   }
 
-  if (env.nodeEnv !== "production" && statusCode === 500) {
+  if (statusCode === 500) {
     console.error(error);
   }
 
