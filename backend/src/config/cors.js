@@ -1,5 +1,4 @@
 const env = require("./env");
-const ApiError = require("../utils/ApiError");
 
 const corsOptions = {
   origin(origin, callback) {
@@ -8,7 +7,7 @@ const corsOptions = {
       return;
     }
 
-    callback(new ApiError(403, "Origin not allowed by CORS"));
+    callback(new Error("Origin not allowed by CORS"));
   },
   credentials: true
 };

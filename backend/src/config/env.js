@@ -15,7 +15,12 @@ if (missingEnvVars.length > 0) {
   throw new Error(`Missing required environment variables: ${missingEnvVars.join(", ")}`);
 }
 
-const allowedOrigins = (process.env.FRONTEND_ORIGIN || "http://localhost:5173")
+const defaultOrigins = [
+  "http://localhost:5173",
+  "https://marketnest-silk.vercel.app"
+];
+
+const allowedOrigins = (process.env.FRONTEND_ORIGIN || defaultOrigins.join(","))
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);

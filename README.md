@@ -194,7 +194,12 @@ JWT_SECRET=
 JWT_REFRESH_SECRET=  
 CLOUDINARY_CLOUD_NAME=  
 CLOUDINARY_API_KEY=  
-CLOUDINARY_API_SECRET=    
+CLOUDINARY_API_SECRET=  
+EMAIL_USER=  
+EMAIL_PASS=  
+FRONTEND_ORIGIN=http://localhost:5173,https://marketnest-silk.vercel.app  
+
+`FRONTEND_ORIGIN` is a comma-separated list of allowed frontend URLs for CORS. Include every Vercel preview or custom domain you use.
 
 
 ---
