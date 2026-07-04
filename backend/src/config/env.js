@@ -1,12 +1,22 @@
-const requiredEnvVars = [
+const nodeEnv = process.env.NODE_ENV || "development";
+const isProduction = nodeEnv === "production";
+
+const commonRequiredEnvVars = [
   "MONGO_URI",
   "JWT_SECRET",
   "JWT_REFRESH_SECRET",
   "CLOUDINARY_CLOUD_NAME",
   "CLOUDINARY_API_KEY",
-  "CLOUDINARY_API_SECRET",
-  "EMAIL_USER",
-  "EMAIL_PASS"
+  "CLOUDINARY_API_SECRET"
+];
+
+const emailRequiredEnvVars = isProduction
+  ? ["BREVO_API_KEY", "EMAIL_FROM"]
+  : ["EMAIL_USER", "EMAIL_PASS"];
+
+const requiredEnvVars = [
+  ...commonRequiredEnvVars,
+  ...emailRequiredEnvVars
 ];
 
 const missingEnvVars = requiredEnvVars.filter((key) => !process.env[key]);
@@ -30,7 +40,8 @@ module.exports = {
   mongoUri: process.env.MONGO_URI,
   jwtSecret: process.env.JWT_SECRET,
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET,
-  nodeEnv: process.env.NODE_ENV || "development",
+  nodeEnv,
+  isProduction,
   allowedOrigins,
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,
@@ -39,6 +50,8 @@ module.exports = {
   },
   email: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    pass: process.env.EMAIL_PASS,
+    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+    brevoApiKey: process.env.BREVO_API_KEY
   }
 };
