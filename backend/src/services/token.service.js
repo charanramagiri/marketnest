@@ -17,6 +17,11 @@ const generateRefreshToken = (user) => jwt.sign(
   { expiresIn: "7d" }
 );
 
+const generateTokens = (user) => ({
+  accessToken: generateAccessToken(user),
+  refreshToken: generateRefreshToken(user)
+});
+
 const verifyAccessToken = (token) => jwt.verify(token, env.jwtSecret);
 
 const verifyRefreshToken = (token) => jwt.verify(token, env.jwtRefreshSecret);
@@ -34,6 +39,7 @@ module.exports = {
   REFRESH_COOKIE_NAME,
   generateAccessToken,
   generateRefreshToken,
+  generateTokens,
   verifyAccessToken,
   verifyRefreshToken,
   getRefreshCookieOptions,

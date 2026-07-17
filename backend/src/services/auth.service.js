@@ -66,8 +66,7 @@ const login = async ({ email, password }) => {
     throw new ApiError(400, "Invalid credentials");
   }
 
-  const accessToken = tokenService.generateAccessToken(user);
-  const refreshToken = tokenService.generateRefreshToken(user);
+  const { accessToken, refreshToken } = tokenService.generateTokens(user);
 
   user.refreshToken = tokenService.hashToken(refreshToken);
   await user.save();
