@@ -7,17 +7,17 @@ import { getRoleFromToken, setAuth } from "../utils/auth";
 export default function SelectRole() {
   const navigate = useNavigate();
   const location = useLocation();
-  const googleUser = location.state;
+  const googleSignup = location.state;
 
   const [role, setRole] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!googleUser?.email || !googleUser?.googleId) {
+    if (!googleSignup?.credential) {
       navigate("/login", { replace: true });
     }
-  }, [googleUser, navigate]);
+  }, [googleSignup, navigate]);
 
   const handleContinue = async () => {
     if (!role) {
@@ -30,10 +30,7 @@ export default function SelectRole() {
       setError("");
 
       const res = await completeGoogleSignup({
-        email: googleUser.email,
-        googleId: googleUser.googleId,
-        name: googleUser.name,
-        avatar: googleUser.picture,
+        credential: googleSignup.credential,
         role
       });
 
@@ -48,14 +45,13 @@ export default function SelectRole() {
       setAuth({ token, role: userRole });
       navigate("/marketplace", { replace: true });
     } catch (err) {
-      console.error(err);
       setError(err.response?.data?.message || "Google signup failed");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!googleUser?.email) {
+  if (!googleSignup?.credential) {
     return null;
   }
 
@@ -92,7 +88,7 @@ export default function SelectRole() {
               {loading ? "Continuing..." : "Continue"}
             </button>
 
-            {error && <p className="error-text">{error}</p>}
+            {error && <p className="error-text" role="alert">{error}</p>}
           </div>
         </div>
       </div>

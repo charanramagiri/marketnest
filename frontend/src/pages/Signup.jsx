@@ -15,6 +15,7 @@ export default function Signup() {
   });
 
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,6 +28,8 @@ export default function Signup() {
     }
 
     try {
+      setIsSubmitting(true);
+      setError("");
       const signupData = {
         name: form.name,
         email: form.email,
@@ -47,11 +50,11 @@ export default function Signup() {
         }
       });
     } catch (error) {
-      console.error("SIGNUP ERROR:", error);
-
       setError(
         error.response?.data?.message || "Signup failed"
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -92,6 +95,8 @@ export default function Signup() {
               <input
                 id="email"
                 className="input"
+                type="email"
+                autoComplete="email"
                 placeholder="you@example.com"
                 value={form.email}
                 onChange={(e) =>
@@ -109,6 +114,7 @@ export default function Signup() {
                 className="input"
                 placeholder="Create password"
                 type="password"
+                autoComplete="new-password"
                 value={form.password}
                 onChange={(e) =>
                   setForm({ ...form, password: e.target.value })
@@ -125,6 +131,7 @@ export default function Signup() {
                 className="input"
                 placeholder="Confirm password"
                 type="password"
+                autoComplete="new-password"
                 value={form.confirmPassword}
                 onChange={(e) =>
                   setForm({ ...form, confirmPassword: e.target.value })
@@ -150,11 +157,11 @@ export default function Signup() {
               </select>
             </div>
 
-            <button type="submit" className="btn btn-primary">
-              Signup
+            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+              {isSubmitting ? "Creating account..." : "Signup"}
             </button>
 
-            {error && <p className="error-text">{error}</p>}
+            {error && <p className="error-text" role="alert">{error}</p>}
 
             <p className="text-muted">
               Already have an account? <Link to="/login">Login</Link>

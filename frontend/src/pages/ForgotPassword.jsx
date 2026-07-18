@@ -9,6 +9,7 @@ export default function ForgotPassword() {
 
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const sendOtp = async () => {
     const validationError = validateEmail(email);
@@ -19,6 +20,8 @@ export default function ForgotPassword() {
     }
 
     try {
+      setIsSubmitting(true);
+      setError("");
 
       await forgotPassword({ email });
 
@@ -35,6 +38,8 @@ export default function ForgotPassword() {
         err.response?.data?.message ||
         "Failed to send OTP"
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -48,6 +53,8 @@ export default function ForgotPassword() {
 
           <input
             className="input"
+            type="email"
+            autoComplete="email"
             placeholder="Enter Email"
             value={email}
             onChange={(e) =>
@@ -58,12 +65,13 @@ export default function ForgotPassword() {
           <button
             className="btn btn-primary"
             onClick={sendOtp}
+            disabled={isSubmitting}
           >
-            Send OTP
+            {isSubmitting ? "Sending..." : "Send OTP"}
           </button>
 
           {error && (
-            <p className="error-text">
+            <p className="error-text" role="alert">
               {error}
             </p>
           )}

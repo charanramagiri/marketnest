@@ -17,6 +17,7 @@ export default function ResetPassword() {
     useState("");
 
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
 
@@ -37,6 +38,8 @@ export default function ResetPassword() {
     }
 
     try {
+      setIsSubmitting(true);
+      setError("");
 
       await resetPasswordRequest({ email, password, resetToken });
 
@@ -55,6 +58,8 @@ export default function ResetPassword() {
         err.response?.data?.message ||
         "Password reset failed"
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -69,6 +74,7 @@ export default function ResetPassword() {
           <input
             className="input"
             type="password"
+            autoComplete="new-password"
             placeholder="New Password"
             value={password}
             onChange={(e) =>
@@ -79,6 +85,7 @@ export default function ResetPassword() {
           <input
             className="input"
             type="password"
+            autoComplete="new-password"
             placeholder="Confirm Password"
             value={confirmPassword}
             onChange={(e) =>
@@ -91,12 +98,13 @@ export default function ResetPassword() {
           <button
             className="btn btn-primary"
             onClick={resetPassword}
+            disabled={isSubmitting}
           >
-            Update Password
+            {isSubmitting ? "Updating..." : "Update Password"}
           </button>
 
           {error && (
-            <p className="error-text">
+            <p className="error-text" role="alert">
               {error}
             </p>
           )}

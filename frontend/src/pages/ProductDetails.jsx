@@ -61,8 +61,13 @@ function ProductDetails() {
   if (isLoading) {
     return (
       <section className="page-shell">
-        <div className="card state-card">
-          <p className="text-muted">Loading product details...</p>
+        <div className="details-layout" aria-label="Loading product details" aria-busy="true">
+          <div className="skeleton skeleton-details-media" />
+          <div className="card details-panel skeleton-panel">
+            <div className="skeleton skeleton-heading" />
+            <div className="skeleton skeleton-line" />
+            <div className="skeleton skeleton-line short" />
+          </div>
         </div>
       </section>
     );
@@ -95,7 +100,7 @@ function ProductDetails() {
         <div>
           <div className="details-media-main">
             {mainImage ? (
-              <img src={mainImage} alt={product.name || "Product"} />
+              <img src={mainImage} alt={product.name || "Product"} decoding="async" />
             ) : (
               <div className="media-fallback">No image available</div>
             )}
@@ -110,7 +115,7 @@ function ProductDetails() {
                   className={`thumb ${index === activeIndex ? "active" : ""}`}
                   onClick={() => setActiveIndex(index)}
                 >
-                  <img src={image} alt={`Product thumbnail ${index + 1}`} />
+                  <img src={image} alt={`Product thumbnail ${index + 1}`} loading="lazy" decoding="async" />
                 </button>
               ))}
             </div>

@@ -13,6 +13,7 @@ function CreateProduct() {
   const [images, setImages] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   const handleChange = (e) => {
     setFormData({
@@ -30,6 +31,7 @@ function CreateProduct() {
     }
 
     setError("");
+    setMessage("");
     setImages(selectedFiles);
   };
 
@@ -39,6 +41,7 @@ function CreateProduct() {
     try {
       setIsSubmitting(true);
       setError("");
+      setMessage("");
 
       if (images.length > 5) {
         setError("You can upload a maximum of 5 images.");
@@ -66,6 +69,7 @@ function CreateProduct() {
         status: "published"
       });
       setImages([]);
+      setMessage("Product created successfully. You can create another listing or view it in your dashboard.");
     } catch (error) {
       console.error("Product creation failed", error);
       setError(error.response?.data?.message || "Product creation failed");
@@ -116,7 +120,7 @@ function CreateProduct() {
           <div className="span-2">
             <label className="field-label" htmlFor="images">Product Images</label>
             <p className="text-muted image-help-text">Upload up to 5 images.</p>
-            <input id="images" className="file-input" type="file" multiple onChange={handleImageChange} />
+            <input id="images" className="file-input" type="file" accept="image/*" multiple onChange={handleImageChange} />
 
             {images.length > 0 && (
               <ul className="file-list">
@@ -128,7 +132,8 @@ function CreateProduct() {
           </div>
         </div>
 
-        {error && <p className="error-text edit-error">{error}</p>}
+        {error && <p className="error-text edit-error" role="alert">{error}</p>}
+        {message && <p className="success-text edit-error" role="status">{message}</p>}
 
         <div style={{ marginTop: "20px" }}>
           <button type="submit" className="btn btn-primary" disabled={isSubmitting}>

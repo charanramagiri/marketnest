@@ -230,7 +230,7 @@ function EditProduct() {
             <p className="text-muted image-help-text">
               You can keep at most {MAX_IMAGES} images total. Current selected total: {totalImagesAfterSave}
             </p>
-            <input id="images" className="file-input" type="file" multiple onChange={handleNewImageChange} />
+            <input id="images" className="file-input" type="file" accept="image/*" multiple onChange={handleNewImageChange} />
 
             {newImages.length > 0 && (
               <ul className="file-list">
@@ -242,7 +242,7 @@ function EditProduct() {
           </div>
         </div>
 
-        {error && <p className="error-text edit-error">{error}</p>}
+        {error && <p className="error-text edit-error" role="alert">{error}</p>}
 
         <div className="edit-form-actions">
           <button type="submit" className="btn btn-primary" disabled={isSaving}>

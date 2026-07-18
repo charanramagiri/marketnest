@@ -11,6 +11,7 @@ export default function VerifyResetOtp() {
 
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
 
@@ -23,6 +24,8 @@ export default function VerifyResetOtp() {
   const verifyOtp = async () => {
 
     try {
+      setIsSubmitting(true);
+      setError("");
 
       const res = await verifyResetOtp({ email, otp });
 
@@ -39,6 +42,8 @@ export default function VerifyResetOtp() {
         err.response?.data?.message ||
         "OTP verification failed"
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -56,6 +61,8 @@ export default function VerifyResetOtp() {
 
           <input
             className="input"
+            inputMode="numeric"
+            autoComplete="one-time-code"
             placeholder="Enter OTP"
             value={otp}
             onChange={(e) =>
@@ -66,12 +73,13 @@ export default function VerifyResetOtp() {
           <button
             className="btn btn-primary"
             onClick={verifyOtp}
+            disabled={isSubmitting}
           >
-            Verify OTP
+            {isSubmitting ? "Verifying..." : "Verify OTP"}
           </button>
 
           {error && (
-            <p className="error-text">
+            <p className="error-text" role="alert">
               {error}
             </p>
           )}

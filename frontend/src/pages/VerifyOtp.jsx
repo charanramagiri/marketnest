@@ -13,6 +13,8 @@ export default function VerifyOtp() {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   // Redirect if no email
   useEffect(() => {
@@ -33,6 +35,8 @@ export default function VerifyOtp() {
     e.preventDefault();
 
     try {
+      setIsVerifying(true);
+      setError("");
       const res = await verifyOtpRequest({
         email,
         otp
@@ -52,12 +56,16 @@ export default function VerifyOtp() {
       setError(
         err.response?.data?.message || "OTP verification failed"
       );
+    } finally {
+      setIsVerifying(false);
     }
   };
 
   // RESEND OTP
   const resendOtp = async () => {
     try {
+      setIsResending(true);
+      setError("");
       const res = await resendOtpRequest({
         email
       });
@@ -69,6 +77,8 @@ export default function VerifyOtp() {
       setError(
         err.response?.data?.message || "Failed to resend OTP"
       );
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -86,32 +96,35 @@ export default function VerifyOtp() {
         <form onSubmit={verifyOtp} className="form-stack">
           <input
             type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
             placeholder="Enter OTP"
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
             className="input"
           />
 
-          <button type="submit" className="btn btn-primary">
-            Verify OTP
+          <button type="submit" className="btn btn-primary" disabled={isVerifying || isResending}>
+            {isVerifying ? "Verifying..." : "Verify OTP"}
           </button>
 
           <button
             type="button"
             className="btn"
             onClick={resendOtp}
+            disabled={isVerifying || isResending}
           >
-            Resend OTP
+            {isResending ? "Sending..." : "Resend OTP"}
           </button>
 
           {error && (
-            <p style={{ color: "red" }}>
+            <p className="error-text" role="alert">
               {error}
             </p>
           )}
 
           {message && (
-            <p style={{ color: "green" }}>
+            <p className="success-text" role="status">
               {message}
             </p>
           )}

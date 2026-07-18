@@ -2,9 +2,9 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 
-import API from "../api/api";
 import { googleLogin, login as loginRequest } from "../api/auth.api";
 import { getRoleFromToken, setAuth } from "../utils/auth";
+import { validateEmail } from "../utils/validation";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -12,9 +12,25 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
 
-  const login = async () => {
+  const login = async (event) => {
+    event.preventDefault();
+    const emailError = validateEmail(email);
+    if (emailError) {
+      setError(emailError);
+      return;
+    }
+
+    if (!password) {
+      setError("Password is required");
+      return;
+    }
+
     try {
+      setIsSubmitting(true);
+      setError("");
       const res = await loginRequest({
         email,
         password
@@ -31,19 +47,20 @@ export default function Login() {
       setAuth({ token, role });
       navigate("/marketplace");
     } catch (err) {
-      console.error(err);
       setError(err.response?.data?.message || "Login failed");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
+      setIsGoogleSubmitting(true);
+      setError("");
       const res = await googleLogin({
         credential: credentialResponse.credential
       });
-  
-      console.log("Backend Response:", res.data);
-  
+
       // Existing Google user
       if (!res.data.isNewUser) {
         setAuth({
@@ -58,15 +75,13 @@ export default function Login() {
       // New Google user
       navigate("/select-role", {
         state: {
-          email: res.data.email,
-          name: res.data.name,
-          picture: res.data.picture,
-          googleId: res.data.googleId
+          credential: credentialResponse.credential
         }
       });
     } catch (err) {
-      console.error(err);
-      setError("Google Login Failed");
+      setError(err.response?.data?.message || "Google login failed");
+    } finally {
+      setIsGoogleSubmitting(false);
     }
   };
 
@@ -84,7 +99,7 @@ export default function Login() {
         <div className="auth-main">
           <h2>Login</h2>
 
-          <div className="form-stack">
+          <form className="form-stack" onSubmit={login}>
             <div>
               <label className="field-label" htmlFor="email">
                 Email
@@ -93,6 +108,8 @@ export default function Login() {
               <input
                 id="email"
                 className="input"
+                type="email"
+                autoComplete="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -111,6 +128,7 @@ export default function Login() {
                 id="password"
                 className="input"
                 type="password"
+                autoComplete="current-password"
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) =>
@@ -126,11 +144,11 @@ export default function Login() {
             </p>
 
             <button
-              type="button"
-              onClick={login}
+              type="submit"
               className="btn btn-primary"
+              disabled={isSubmitting || isGoogleSubmitting}
             >
-              Login
+              {isSubmitting ? "Signing in..." : "Login"}
             </button>
 
             <div
@@ -148,13 +166,12 @@ export default function Login() {
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={() => {
-                console.log("Google Login Failed");
-                alert("Google Login Failed");
+                setError("Google login failed. Please try again.");
               }}
             />
 
             {error && (
-              <p className="error-text">{error}</p>
+              <p className="error-text" role="alert">{error}</p>
             )}
 
             <p className="text-muted">
@@ -163,7 +180,7 @@ export default function Login() {
                 Create an account
               </Link>
             </p>
-          </div>
+          </form>
         </div>
       </div>
     </section>

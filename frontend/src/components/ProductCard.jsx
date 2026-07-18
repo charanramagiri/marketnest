@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { resolveImageUrl } from "../utils/imageUrl";
 
 function ProductCard({ product, to, onClick, actions = null, showStatus = true }) {
-  const [imageError, setImageError] = useState(false);
+  const [failedImageUrl, setFailedImageUrl] = useState("");
 
   const imageUrl = useMemo(() => {
     const firstImage = Array.isArray(product?.images) ? product.images[0] : "";
@@ -21,8 +21,14 @@ function ProductCard({ product, to, onClick, actions = null, showStatus = true }
         onClick={onClick}
       >
         <div className="product-media">
-          {imageUrl && !imageError ? (
-            <img src={imageUrl} alt={product?.name || "Product"} onError={() => setImageError(true)} />
+          {imageUrl && failedImageUrl !== imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={product?.name || "Product"}
+              loading="lazy"
+              decoding="async"
+              onError={() => setFailedImageUrl(imageUrl)}
+            />
           ) : (
             <div className="media-fallback">No image available</div>
           )}

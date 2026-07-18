@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { logout } from "../api/auth.api";
 import { clearAuth, getRole, isAuthenticated } from "../utils/auth";
@@ -6,6 +7,7 @@ function Navbar() {
   const navigate = useNavigate();
   const loggedIn = isAuthenticated();
   const role = getRole();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -15,6 +17,7 @@ function Navbar() {
     }
 
     clearAuth();
+    setIsMenuOpen(false);
     navigate("/login");
   };
 
@@ -25,19 +28,32 @@ function Navbar() {
           MarketNest
         </NavLink>
 
-        <div className="nav-links">
+        <button
+          type="button"
+          className="nav-menu-button"
+          aria-label="Toggle navigation menu"
+          aria-expanded={isMenuOpen}
+          aria-controls="primary-navigation"
+          onClick={() => setIsMenuOpen((open) => !open)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+
+        <div id="primary-navigation" className={`nav-links ${isMenuOpen ? "open" : ""}`}>
           {loggedIn ? (
             <>
-              <NavLink to="/marketplace" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+              <NavLink to="/marketplace" onClick={() => setIsMenuOpen(false)} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
                 Marketplace
               </NavLink>
 
               {role === "brand" && (
                 <>
-                  <NavLink to="/create-product" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+                  <NavLink to="/create-product" onClick={() => setIsMenuOpen(false)} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
                     Create Product
                   </NavLink>
-                  <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+                  <NavLink to="/dashboard" onClick={() => setIsMenuOpen(false)} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
                     Dashboard
                   </NavLink>
                 </>
@@ -49,10 +65,10 @@ function Navbar() {
             </>
           ) : (
             <>
-              <NavLink to="/login" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+              <NavLink to="/login" onClick={() => setIsMenuOpen(false)} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
                 Login
               </NavLink>
-              <NavLink to="/signup" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+              <NavLink to="/signup" onClick={() => setIsMenuOpen(false)} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
                 Signup
               </NavLink>
             </>

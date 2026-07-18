@@ -148,14 +148,22 @@ function Dashboard() {
         </div>
 
         {isProductsLoading && (
-          <div className="card state-card">
-            <p className="text-muted">Loading your products...</p>
+          <div className="brand-products-grid" aria-label="Loading your products" aria-busy="true">
+            {Array.from({ length: 3 }, (_, index) => (
+              <div key={index} className="card product-skeleton" aria-hidden="true">
+                <div className="skeleton skeleton-media" />
+                <div className="skeleton-content">
+                  <div className="skeleton skeleton-line" />
+                  <div className="skeleton skeleton-line short" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
         {!isProductsLoading && productsError && (
           <div className="card state-card">
-            <p className="error-text">{productsError}</p>
+            <p className="error-text" role="alert">{productsError}</p>
           </div>
         )}
 

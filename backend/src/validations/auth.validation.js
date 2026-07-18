@@ -103,11 +103,38 @@ const resetPassword = ({ body }) => {
   return { body: normalized };
 };
 
+const googleLogin = ({ body }) => {
+  const credential = normalizeString(body.credential);
+
+  if (!credential) {
+    return { error: "Google credential is required" };
+  }
+
+  return { body: { credential } };
+};
+
+const completeGoogleSignup = ({ body }) => {
+  const credential = normalizeString(body.credential);
+  const role = normalizeString(body.role);
+
+  if (!credential) {
+    return { error: "Google credential is required" };
+  }
+
+  if (!["customer", "brand"].includes(role)) {
+    return { error: "Invalid role selected" };
+  }
+
+  return { body: { credential, role } };
+};
+
 module.exports = {
   signup,
   login,
   emailOnly,
   verifyOtp,
   resetPassword,
+  googleLogin,
+  completeGoogleSignup,
   validatePassword
 };

@@ -12,6 +12,7 @@ import ProductDetails from "../pages/ProductDetails.jsx";
 import Dashboard from "../pages/Dashboard.jsx";
 import CreateProduct from "../pages/CreateProduct.jsx";
 import EditProduct from "../pages/EditProduct.jsx";
+import NotFound from "../pages/NotFound.jsx";
 
 // NEW PAGES
 import SelectRole from "../pages/SelectRole.jsx";
@@ -92,6 +93,8 @@ function AppRouter() {
             </RequireRole>
           }
         />
+
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

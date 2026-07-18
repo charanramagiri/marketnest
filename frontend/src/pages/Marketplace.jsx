@@ -163,14 +163,22 @@ function Marketplace() {
       </form>
 
       {isLoading && (
-        <div className="card state-card">
-          <p className="text-muted">Loading products...</p>
+        <div className="product-grid" aria-label="Loading products" aria-busy="true">
+          {Array.from({ length: 8 }, (_, index) => (
+            <div key={index} className="card product-skeleton" aria-hidden="true">
+              <div className="skeleton skeleton-media" />
+              <div className="skeleton-content">
+                <div className="skeleton skeleton-line" />
+                <div className="skeleton skeleton-line short" />
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       {!isLoading && error && (
         <div className="card state-card">
-          <p className="error-text">{error}</p>
+          <p className="error-text" role="alert">{error}</p>
         </div>
       )}
 
