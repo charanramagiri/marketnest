@@ -12,6 +12,11 @@ import ProductDetails from "../pages/ProductDetails.jsx";
 import Dashboard from "../pages/Dashboard.jsx";
 import CreateProduct from "../pages/CreateProduct.jsx";
 import EditProduct from "../pages/EditProduct.jsx";
+
+// NEW PAGES
+import SelectRole from "../pages/SelectRole.jsx";
+import CompleteGoogleSignup from "../pages/CompleteGoogleSignup.jsx";
+
 import { getRole, isAuthenticated } from "../utils/auth";
 
 function RequireRole({ role, children }) {
@@ -30,15 +35,28 @@ function AppRouter() {
   return (
     <BrowserRouter>
       <Navbar />
+
       <Routes>
         <Route path="/" element={<Navigate to="/marketplace" />} />
+
+        {/* Authentication */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/verify-reset-otp" element={<VerifyResetOtp />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* Google Authentication */}
+        <Route path="/select-role" element={<SelectRole />} />
+        <Route
+          path="/complete-google-signup"
+          element={<CompleteGoogleSignup />}
+        />
+
+        {/* Marketplace */}
         <Route path="/marketplace" element={<Marketplace />} />
+
         <Route
           path="/product/:id"
           element={
@@ -47,6 +65,7 @@ function AppRouter() {
             </RequireRole>
           }
         />
+
         <Route
           path="/dashboard"
           element={
@@ -55,6 +74,7 @@ function AppRouter() {
             </RequireRole>
           }
         />
+
         <Route
           path="/create-product"
           element={
@@ -63,6 +83,7 @@ function AppRouter() {
             </RequireRole>
           }
         />
+
         <Route
           path="/edit-product/:id"
           element={

@@ -8,6 +8,8 @@ const resendOtp = (payload) => API.post("/auth/resend-otp", payload);
 const forgotPassword = (payload) => API.post("/auth/forgot-password", payload);
 const verifyResetOtp = (payload) => API.post("/auth/verify-reset-otp", payload);
 const resetPassword = (payload) => API.post("/auth/reset-password", payload);
+const googleLogin = (payload) => API.post("/auth/google", payload);
+const completeGoogleSignup = (payload) => API.post("/auth/google/complete", payload);
 
 export {
   signup,
@@ -18,4 +20,6 @@ export {
   forgotPassword,
   verifyResetOtp,
   resetPassword,
+  googleLogin,
+  completeGoogleSignup,
 };

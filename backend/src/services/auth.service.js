@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const User = require("../models/User");
 const Otp = require("../models/Otp");
 const ApiError = require("../utils/ApiError");
@@ -66,12 +67,21 @@ const login = async ({ email, password }) => {
     throw new ApiError(400, "Invalid credentials");
   }
 
-  const { accessToken, refreshToken } = tokenService.generateTokens(user);
+  return await loginUser(user);
+};
+
+const loginUser = async (user) => {
+  const accessToken = tokenService.generateAccessToken(user);
+  const refreshToken = tokenService.generateRefreshToken(user);
 
   user.refreshToken = tokenService.hashToken(refreshToken);
   await user.save();
 
-  return { accessToken, refreshToken };
+  return {
+    accessToken,
+    refreshToken,
+    user
+  };
 };
 
 const refreshAccessToken = async (refreshToken) => {
@@ -146,14 +156,54 @@ const resetPassword = async ({ email, password, resetToken }) => {
   await Otp.deleteMany({ email, purpose: "reset-password" });
 };
 
+const completeGoogleSignup = async ({ email, googleId, name, avatar, role }) => {
+  const existingUser = await User.findOne({ email });
+
+  if (existingUser) {
+    throw new ApiError(400, "User already exists");
+  }
+
+  if (!["customer", "brand"].includes(role)) {
+    throw new ApiError(400, "Invalid role selected");
+  }
+
+  const hashedPassword = await bcrypt.hash(crypto.randomBytes(32).toString("hex"), 10);
+
+  const user = await User.create({
+    name,
+    email,
+    password: hashedPassword,
+    role,
+    provider: "google",
+    googleId,
+    avatar: avatar || null
+  });
+
+  return loginUser(user);
+};
+
+const googleLoginExistingUser = async (user, { googleId, picture }) => {
+  if (user.provider === "local") {
+    user.provider = "google";
+    user.googleId = googleId;
+    user.avatar = picture || user.avatar;
+    await user.save();
+  }
+
+  return loginUser(user);
+};
+
 module.exports = {
   signup,
   verifySignupOtp,
   resendSignupOtp,
   login,
+  loginUser,
   refreshAccessToken,
   logout,
   forgotPassword,
   verifyResetOtp,
-  resetPassword
+  resetPassword,
+  completeGoogleSignup,
+  googleLoginExistingUser
 };
